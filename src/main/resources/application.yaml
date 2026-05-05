@@ -1,0 +1,79 @@
+spring:
+  config:
+    import: optional:file:.env
+  application:
+    name: inventory
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    jpa:
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.PostgreSQLDialect
+          show_sql: true
+          format_sql: true
+          jdbc:
+            batch_size: 20
+            generate_statistics: true
+
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      jedis:
+        pool:
+          max-active: 10
+          max-idle: 5
+          min-idle: 1
+      timeout: 60000
+    kafka:
+      producer:
+        bootstrap-servers:
+          - localhost:9092
+          - localhost:9094
+        key-serializer: org.apache.kafka.common.serialization.StringSerializer
+        value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        acks: all
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+      topics:
+        names:
+          email-report-notifications-topic: ${EMAIL-REPORT-NOTIFICATIONS-TOPIC}
+  mvc:
+    hidden:
+      method:
+        filter:
+          enabled: true
+  server:
+    port: ${SERVER_PORT}
+  security:
+    jwt:
+      secret: ${SECURITY_JWT}
+    devices:
+      secret:
+        encryption:
+          key: ${DEVICE_SECRET_ENCRYPT_KEY}
+          algorithm: ${DEVICE_SECRET_ENCRYPT_ALGORITHM}
+          iv-length-bytes: ${DEVICE_SECRET_ENCRYPT_IV_LENGTH_BYTES}
+          tag-length-bits: ${DEVICE_SECRET_ENCRYPT_TAG_LENGTH_BITS}
+
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  receipt:
+    check:
+      url: ${RECEIPT_CHECK_URL}
+
+  clients:
+    user:
+      url: ${CLIENTS_USER}
+    email:
+      url: ${CLIENTS_EMAIL}
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml

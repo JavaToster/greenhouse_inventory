@@ -1,4 +1,4 @@
-package com.example.inventory.configuration.security;
+package com.example.inventory.configurations.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -16,13 +16,17 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfiguration {
+    private final JwtFilter jwtFilter;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http){
         http
                 .authorizeHttpRequests(request -> request
+                        .requestMatchers("/auth/**").permitAll()
                         .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
-                .;
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

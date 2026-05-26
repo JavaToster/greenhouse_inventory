@@ -1,3 +1,6 @@
+server:
+  port: ${INVENTORY_SERVER_PORT}
+
 spring:
   config:
     import: optional:file:.env
@@ -5,7 +8,7 @@ spring:
     name: inventory
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${SPRING_DATASOURCE_URL}
+    url: ${INVENTORY_SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
     jpa:
@@ -46,8 +49,6 @@ spring:
       method:
         filter:
           enabled: true
-  server:
-    port: ${SERVER_PORT}
   security:
     jwt:
       secret: ${SECURITY_JWT}
@@ -64,16 +65,21 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
-  receipt:
-    check:
-      url: ${RECEIPT_CHECK_URL}
-
-  clients:
-    user:
-      url: ${CLIENTS_USER}
-    email:
-      url: ${CLIENTS_EMAIL}
-
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
+  cloud:
+    openfeign:
+      client:
+        config:
+          auth-service:
+            connectTimeout: 2000
+            readTimeout: 3000
+          default:
+            connectTimeout: 5000
+            readTimeout: 5000
+
+app:
+  clients:
+    user:
+      url: ${INVENTORY_USER_CLIENT_URL}

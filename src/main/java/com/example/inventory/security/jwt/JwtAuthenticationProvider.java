@@ -1,11 +1,9 @@
-package com.example.inventory.security.token;
+package com.example.inventory.security.jwt;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.example.inventory.exceptions.auth.InvalidTokenTypeException;
-import com.example.inventory.security.DevicePrincipal;
-import com.example.inventory.security.JwtUtil;
-import com.example.inventory.security.UserPrincipal;
-import com.example.inventory.security.jwt.TokenType;
+import com.example.inventory.security.principals.DevicePrincipal;
+import com.example.inventory.security.principals.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -19,7 +17,7 @@ import com.example.inventory.util.enums.Role;
 
 @Service
 @RequiredArgsConstructor
-public class TokenAuthenticationService {
+public class JwtAuthenticationProvider {
     private static final String CLUSTER_ID_CLAIM = "cluster_id";
 
     private final JwtUtil jwtUtil;

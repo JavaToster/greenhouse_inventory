@@ -2,7 +2,7 @@ package com.example.inventory.configurations.security;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.example.inventory.exceptions.auth.InvalidTokenTypeException;
-import com.example.inventory.security.token.TokenAuthenticationService;
+import com.example.inventory.security.jwt.JwtAuthenticationProvider;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -19,7 +19,7 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
-    private final TokenAuthenticationService authenticationService;
+    private final JwtAuthenticationProvider authenticationService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

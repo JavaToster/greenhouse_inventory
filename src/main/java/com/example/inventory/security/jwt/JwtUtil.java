@@ -1,16 +1,14 @@
-package com.example.inventory.security;
+package com.example.inventory.security.jwt;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.example.inventory.security.jwt.TokenType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import com.example.inventory.util.enums.Role;

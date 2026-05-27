@@ -1,4 +1,4 @@
-package com.example.inventory.security;
+package com.example.inventory.security.principals;
 
 import com.example.inventory.util.enums.Role;
 

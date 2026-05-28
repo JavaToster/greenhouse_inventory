@@ -44,15 +44,15 @@ public class ClusterService {
 
     @Transactional
     public DevicesTempSecretDTO registerNewCluster(RegisterNewClusterDTO registerNewClusterDTO) {
-        log.info("Registering new cluster '{}' for owner id={}", registerNewClusterDTO.getName(), registerNewClusterDTO.getOwnerId());
+        log.info("Registering new cluster '{}' for owner id={}", registerNewClusterDTO.name(), registerNewClusterDTO.ownerId());
 
         Cluster cluster = new Cluster();
-        cluster.setName(registerNewClusterDTO.getName());
-        cluster.setOwnerId(registerNewClusterDTO.getOwnerId());
+        cluster.setName(registerNewClusterDTO.name());
+        cluster.setOwnerId(registerNewClusterDTO.ownerId());
         clusterStore.save(cluster);
 
-        log.debug("Creating {} initial devices for cluster id={}", registerNewClusterDTO.getDevicesCount(), cluster.getId());
-        List<Device> devicesOfCluster = deviceService.createNewDevices(cluster, registerNewClusterDTO.getDevicesCount());
+        log.debug("Creating {} initial devices for cluster id={}", registerNewClusterDTO.devicesCount(), cluster.getId());
+        List<Device> devicesOfCluster = deviceService.createNewDevices(cluster, registerNewClusterDTO.devicesCount());
         cluster.setDevices(devicesOfCluster);
         deviceStore.saveAll(devicesOfCluster);
 
@@ -128,8 +128,8 @@ public class ClusterService {
     }
 
     private void isWorker(UserInfoDTO worker) throws BadRequestException {
-        if (worker.getRole() != Role.ROLE_WORKER){
-            log.warn("Validation failed: user id={} has role={}, expected ROLE_WORKER", worker.getTelegramId(), worker.getRole());
+        if (worker.role() != Role.ROLE_WORKER){
+            log.warn("Validation failed: user id={} has role={}, expected ROLE_WORKER", worker.telegramId(), worker.role());
             throw new BadRequestException("User is not a worker");
         }
     }
@@ -166,8 +166,8 @@ public class ClusterService {
 
         Set<Long> ownerAndWorkersIds = clustersWithoutUserInfo.stream()
                 .flatMap(c -> {
-                    Set<Long> ids = new HashSet<>(c.getWorkerIds());
-                    if(c.getOwnerId() != null) ids.add(c.getOwnerId());
+                    Set<Long> ids = new HashSet<>(c.workerIds());
+                    if(c.ownerId() != null) ids.add(c.ownerId());
                     return ids.stream();
                 }).collect(Collectors.toSet());
 
@@ -175,26 +175,24 @@ public class ClusterService {
         List<UserInfoDTO> usersInfo = fetchUsersInBatches(ownerAndWorkersIds);
 
         Map<Long, UserInfoDTO> userInfoDTOMap = usersInfo.stream()
-                .collect(Collectors.toMap(UserInfoDTO::getTelegramId, u -> u));
+                .collect(Collectors.toMap(UserInfoDTO::telegramId, u -> u));
 
         log.debug("Mapping {} clusters to rich DTOs with users details", clustersWithoutUserInfo.size());
         return clustersWithoutUserInfo.stream()
                 .map(cluster -> {
-                    ClustersWithUserDetailsDTO clusterWithDetails = new ClustersWithUserDetailsDTO();
-                    clusterWithDetails.setId(cluster.getId());
-                    clusterWithDetails.setName(cluster.getName());
-                    clusterWithDetails.setDescription(cluster.getDescription());
-                    clusterWithDetails.setDevices(cluster.getDevices());
-
-                    clusterWithDetails.setOwner(userInfoDTOMap.get(cluster.getOwnerId()));
-
-                    List<UserInfoDTO> workers = cluster.getWorkerIds().stream()
+                    List<UserInfoDTO> workers = cluster.workerIds().stream()
                             .map(userInfoDTOMap::get)
                             .filter(Objects::nonNull)
                             .toList();
 
-                    clusterWithDetails.setWorkers(workers);
-                    return clusterWithDetails;
+                    return new ClustersWithUserDetailsDTO(
+                            cluster.id(),
+                            cluster.name(),
+                            cluster.description(),
+                            userInfoDTOMap.get(cluster.ownerId()),
+                            workers,
+                            cluster.devices()
+                    );
                 }).toList();
     }
 

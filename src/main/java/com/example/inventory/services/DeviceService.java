@@ -54,24 +54,24 @@ public class DeviceService {
     }
 
     public String verify(DeviceAuthRequestDTO deviceAuthRequestDTO) {
-        log.info("Authentication attempt for device id={}", deviceAuthRequestDTO.getDeviceId());
-        Device device = deviceStore.findById(deviceAuthRequestDTO.getDeviceId());
+        log.info("Authentication attempt for device id={}", deviceAuthRequestDTO.deviceId());
+        Device device = deviceStore.findById(deviceAuthRequestDTO.deviceId());
 
-        String redisKey = redisKeyCreator.createChallengeKey(deviceAuthRequestDTO.getDeviceId().toString());
+        String redisKey = redisKeyCreator.createChallengeKey(deviceAuthRequestDTO.deviceId().toString());
         String issuedChallenge = redisRepository.findByKey(redisKey, String.class);
 
         if (issuedChallenge == null) {
-            log.warn("Auth failed for device id={}: challenge expired or never issued", deviceAuthRequestDTO.getDeviceId());
+            log.warn("Auth failed for device id={}: challenge expired or never issued", deviceAuthRequestDTO.deviceId());
             throw new BadCredentialsException("No challenge issued or expired");
         }
 
-        if (!issuedChallenge.equals(deviceAuthRequestDTO.getChallenge())) {
-            log.warn("Auth failed for device id={}: challenge mismatch", deviceAuthRequestDTO.getDeviceId());
+        if (!issuedChallenge.equals(deviceAuthRequestDTO.challenge())) {
+            log.warn("Auth failed for device id={}: challenge mismatch", deviceAuthRequestDTO.deviceId());
             throw new BadCredentialsException("Challenge mismatch");
         }
 
         log.debug("Decrypting secret for signature validation on device id={}", device.getId());
-        validateSignature(deviceAuthRequestDTO.getSignature(), issuedChallenge, encryptionUtil.decrypt(device.getSecret()));
+        validateSignature(deviceAuthRequestDTO.signature(), issuedChallenge, encryptionUtil.decrypt(device.getSecret()));
 
         log.debug("Removing consumed challenge key='{}' from Redis", redisKey);
         redisRepository.remove(redisKey);
@@ -157,7 +157,7 @@ public class DeviceService {
 
         DevicesSecretWrapper wrapper = redisRepository.findByKey(redisKey, DevicesSecretWrapper.class);
 
-        if (wrapper == null || wrapper.getSecrets() == null) {
+        if (wrapper == null || wrapper.secrets() == null) {
             log.warn("Activation failed: token='{}' is invalid, expired or already processed", token);
             throw new AccessDeniedException("Secrets not found or already activated.");
         }
@@ -165,10 +165,10 @@ public class DeviceService {
         log.debug("Removing temporary activation key='{}' from Redis", redisKey);
         redisRepository.remove(redisKey);
 
-        log.debug("Updating database status to ACTIVE for all devices in cluster id={}", wrapper.getClusterId());
-        deviceStore.updateStatusByClusterId(wrapper.getClusterId(), DeviceStatus.ACTIVE);
+        log.debug("Updating database status to ACTIVE for all devices in cluster id={}", wrapper.clusterId());
+        deviceStore.updateStatusByClusterId(wrapper.clusterId(), DeviceStatus.ACTIVE);
 
-        log.info("All devices for cluster id={} successfully activated", wrapper.getClusterId());
-        return wrapper.getSecrets();
+        log.info("All devices for cluster id={} successfully activated", wrapper.clusterId());
+        return wrapper.secrets();
     }
 }

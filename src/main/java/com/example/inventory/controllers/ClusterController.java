@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,7 +42,7 @@ public class ClusterController {
             @PathVariable("clusterId") UUID clusterId,
             @Valid @RequestBody WorkerAssigmentDTO dto
     ) throws BadRequestException {
-        clusterService.addWorkerToCluster(authentication.telegramId(), clusterId, dto.getWorkerId());
+        clusterService.addWorkerToCluster(authentication.telegramId(), clusterId, dto.workerId());
         return ResponseEntity.ok().build();
     }
 
@@ -54,7 +53,7 @@ public class ClusterController {
             @PathVariable("clusterId") UUID clusterId,
             @Valid @RequestBody WorkerAssigmentDTO workerAssigmentDTO
     ) throws BadRequestException {
-        clusterService.removeWorkerFromCluster(authentication.telegramId(), clusterId, workerAssigmentDTO.getWorkerId());
+        clusterService.removeWorkerFromCluster(authentication.telegramId(), clusterId, workerAssigmentDTO.workerId());
         return ResponseEntity.ok().build();
     }
 

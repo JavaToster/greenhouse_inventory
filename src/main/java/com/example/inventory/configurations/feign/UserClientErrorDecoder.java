@@ -20,8 +20,8 @@ public class UserClientErrorDecoder implements ErrorDecoder {
         if (response.body() != null){
             try(InputStream inputStream = response.body().asInputStream()){
                 ErrorResponseDTO errorResponseDTO = objectMapper.readValue(inputStream, ErrorResponseDTO.class);
-                if (errorResponseDTO.getMessage() != null){
-                    defaultMessage = errorResponseDTO.getMessage();
+                if (errorResponseDTO.message() != null){
+                    defaultMessage = errorResponseDTO.message();
                 }
             } catch (IOException e) {
                 e.printStackTrace();

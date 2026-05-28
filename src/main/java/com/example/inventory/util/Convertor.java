@@ -4,17 +4,12 @@ import com.example.inventory.DTO.cluster.ClusterInfoDTO;
 import com.example.inventory.DTO.device.DeviceInfoDTO;
 import com.example.inventory.models.Cluster;
 import com.example.inventory.models.Device;
-import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor
 public class Convertor {
-    private final ModelMapper modelMapper;
-
     public List<ClusterInfoDTO> convertToClusterInfoDTO(List<Cluster> clusters) {
         return clusters.stream()
                 .map(this::convertToClusterInfoDTO)
@@ -22,7 +17,7 @@ public class Convertor {
     }
 
     public DeviceInfoDTO convertToDeviceInfoDTO(Device device){
-        return modelMapper.map(device, DeviceInfoDTO.class);
+        return new DeviceInfoDTO(device.getId(), device.getStatus());
     }
 
     public List<DeviceInfoDTO> convertToDeviceInfoDTO(List<Device> devices){
@@ -32,13 +27,14 @@ public class Convertor {
     }
 
     public ClusterInfoDTO convertToClusterInfoDTO(Cluster cluster){
-        ClusterInfoDTO clusterInfoDTO = modelMapper.map(cluster, ClusterInfoDTO.class);
-
-        clusterInfoDTO.setOwnerId(cluster.getOwnerId());
-        clusterInfoDTO.setDevices(convertToDeviceInfoDTO(cluster.getDevices()));
-        clusterInfoDTO.setWorkerIds(cluster.getWorkerIds());
-
-        return clusterInfoDTO;
+        return new ClusterInfoDTO(
+                cluster.getId(),
+                cluster.getName(),
+                cluster.getDescription(),
+                cluster.getOwnerId(),
+                convertToDeviceInfoDTO(cluster.getDevices()),
+                cluster.getWorkerIds()
+        );
     }
 
     // public List<TaskInfoDTO> convertToTaskInfoDTO(List<Task> tasks){

@@ -1,2 +1,85 @@
 databaseChangeLog:
-  
+  - changeSet:
+      id: 20260124-1-inventory
+      author: TosterW
+      changes:
+        - createTable:
+            tableName: clusters
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: "gen_random_uuid()"
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: varchar(200)
+              - column:
+                  name: owner_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+
+        - createTable:
+            tableName: devices
+            columns:
+              - column:
+                  name: device_id
+                  type: uuid
+                  defaultValueComputed: "gen_random_uuid()"
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: secret
+                  type: varchar(128)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: status
+                  type: varchar(16)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: cluster_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_device_cluster
+                    referencedTableName: clusters
+                    referencedColumnNames: id
+
+  - changeSet:
+      id: 20260205-1-inventory
+      author: TosterW
+      changes:
+        - createTable:
+            tableName: clusters_workers
+            columns:
+              - column:
+                  name: cluster_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_cw_cluster
+                    referencedTableName: clusters
+                    referencedColumnNames: id
+                    deleteCascade: true
+              - column:
+                  name: worker_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    
+        - addPrimaryKey:
+            tableName: clusters_workers
+            columnNames: cluster_id, worker_id
+            constraintName: pk_clusters_workers

@@ -3,6 +3,7 @@ package com.example.inventory.services;
 import com.example.inventory.DTO.device.ClusterDevicesTempSecretsDTO;
 import com.example.inventory.DTO.device.DeviceInfoDTO;
 import com.example.inventory.DTO.device.DevicesSecretWrapper;
+import com.example.inventory.security.jwt.DeviceJwtTokenIssuer;
 import com.example.inventory.store.ClusterStore;
 import com.example.inventory.store.DeviceStore;
 import com.example.inventory.DTO.auth.DeviceAuthRequestDTO;
@@ -19,7 +20,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.example.inventory.security.jwt.DeviceTokenProvider;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -43,7 +43,7 @@ public class DeviceService {
     private final RedisRepository redisRepository;
     private final RedisKeyCreator redisKeyCreator;
     private final EncryptionUtil encryptionUtil;
-    private final DeviceTokenProvider deviceTokenProvider;
+    private final DeviceJwtTokenIssuer deviceJwtTokenIssuer;
     private final ClusterStore clusterStore;
     private final Convertor convertor;
 
@@ -82,7 +82,7 @@ public class DeviceService {
         redisRepository.remove(redisKey);
 
         log.info("Device id={} successfully authenticated", device.getId());
-        return deviceTokenProvider.generate(device.getId(), device.getCluster().getId());
+        return deviceJwtTokenIssuer.generate(device.getId(), device.getCluster().getId());
     }
 
     private void validateSignature(String clientSig, String data, String secret) {
@@ -91,7 +91,8 @@ public class DeviceService {
         // Безопасное сравнение строк во избежание атак по времени (Timing Attacks)
         if (!MessageDigest.isEqual(expected.getBytes(StandardCharsets.UTF_8),
                 clientSig.getBytes(StandardCharsets.UTF_8))) {
-            log.warn("Signature validation failed. Expected (Hex): {}, Client sent: {}", expected, clientSig);
+            // Безопасный лог: не выводим ожидаемую сигнатуру, чтобы не помогать злоумышленнику
+            log.warn("Signature validation failed for client signature format check.");
             throw new BadCredentialsException("Invalid signature");
         }
     }
@@ -103,7 +104,6 @@ public class DeviceService {
             mac.init(key);
             byte[] rawHmac = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
 
-            // Изменено на Hex формат (в нижнем регистре), так как это стандарт для подписей девайсов
             StringBuilder hexString = new StringBuilder();
             for (byte b : rawHmac) {
                 String hex = Integer.toHexString(0xff & b);
@@ -178,18 +178,22 @@ public class DeviceService {
     }
 
     public List<DeviceInfoDTO> findByClusterAndCheckOwner(UUID clusterId, long userId) {
+        log.info("Fetching devices for cluster id=[{}] requested by user telegramId={}", clusterId, userId);
         Cluster cluster = clusterStore.findById(clusterId);
 
         isOwner(cluster, userId);
 
         List<Device> devices = cluster.getDevices();
+        log.debug("Found {} devices for cluster id=[{}]", devices.size(), clusterId);
 
         return convertor.convertToDeviceInfoDTO(devices);
     }
 
     private void isOwner(Cluster cluster, long userId) {
         if (cluster.getOwnerId() != userId){
+            log.warn("Security Alert: User telegramId={} attempted to access cluster id=[{}] but is NOT the owner", userId, cluster.getId());
             throw new AccessDeniedException("You aren't owner this cluster!");
         }
+        log.debug("Ownership verified for user telegramId={} on cluster id=[{}]", userId, cluster.getId());
     }
 }

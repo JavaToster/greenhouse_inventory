@@ -14,31 +14,41 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponseDTO> exceptionHandle(EntityNotFoundException exc){
-        log.warn("Entity with id not found");
+        log.warn("Inventory entity not found: {}", exc.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponseDTO(HttpStatus.NOT_FOUND.value(), exc.getMessage()));
     }
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ErrorResponseDTO> exceptionHandle(BadRequestException exc){
-        log.warn("Bad request: {}", exc.getMessage());
+        log.warn("Bad request down to inventory: {}", exc.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponseDTO(HttpStatus.BAD_REQUEST.value(), exc.getMessage()));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponseDTO> exceptionHandle(AccessDeniedException exc){
-        log.warn("Security alert - Access denied: {}", exc.getMessage());
+        log.warn("Security alert - Access denied in inventory: {}", exc.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new ErrorResponseDTO(HttpStatus.FORBIDDEN.value(), exc.getMessage()));
     }
 
     @ExceptionHandler(FeignException.class)
     public ResponseEntity<ErrorResponseDTO> exceptionHandle(FeignException exc){
-        log.warn("Feign error - {}", exc.getMessage());
+        log.error("Feign client communication failed: status [{}], method [{}], message [{}]",
+                exc.status(), exc.request() != null ? exc.request().httpMethod() : "UNKNOWN", exc.getMessage());
+
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Feign error - could not connect to external service"));
+                .body(new ErrorResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), "External service communication error"));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponseDTO> handleGlobal(Exception exc) {
+        log.error("Unhandled internal exception in inventory service: ", exc);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error"));
     }
 }

@@ -4,6 +4,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.example.inventory.exceptions.auth.InvalidTokenTypeException;
 import com.example.inventory.security.principals.DevicePrincipal;
 import com.example.inventory.security.principals.UserPrincipal;
+import com.example.inventory.util.enums.TokenType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;

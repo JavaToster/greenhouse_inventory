@@ -1,7 +1,13 @@
 databaseChangeLog:
+  # 1. Создаем кластеры (если их нет)
   - changeSet:
-      id: 20260124-1-inventory
+      id: 20260124-1-inventory-clusters
       author: TosterW
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: clusters
       changes:
         - createTable:
             tableName: clusters
@@ -27,6 +33,16 @@ databaseChangeLog:
                   constraints:
                     nullable: false
 
+  # 2. Создаем девайсы (если их нет)
+  - changeSet:
+      id: 20260124-2-inventory-devices
+      author: TosterW
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: devices
+      changes:
         - createTable:
             tableName: devices
             columns:
@@ -57,9 +73,15 @@ databaseChangeLog:
                     referencedTableName: clusters
                     referencedColumnNames: id
 
+  # 3. Создаем связующую таблицу воркеров (если её нет)
   - changeSet:
-      id: 20260205-1-inventory
+      id: 20260205-1-inventory-workers
       author: TosterW
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: clusters_workers
       changes:
         - createTable:
             tableName: clusters_workers
@@ -78,7 +100,7 @@ databaseChangeLog:
                   type: bigint
                   constraints:
                     nullable: false
-                    
+
         - addPrimaryKey:
             tableName: clusters_workers
             columnNames: cluster_id, worker_id

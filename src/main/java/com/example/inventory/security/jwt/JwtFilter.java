@@ -1,8 +1,8 @@
-package com.example.inventory.configurations.security;
+package com.example.inventory.security.jwt;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.example.inventory.exceptions.auth.InvalidTokenTypeException;
-import com.example.inventory.security.jwt.JwtAuthenticationProvider;
+
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

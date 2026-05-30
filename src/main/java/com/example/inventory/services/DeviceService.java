@@ -1,13 +1,16 @@
 package com.example.inventory.services;
 
 import com.example.inventory.DTO.device.ClusterDevicesTempSecretsDTO;
+import com.example.inventory.DTO.device.DeviceInfoDTO;
 import com.example.inventory.DTO.device.DevicesSecretWrapper;
+import com.example.inventory.store.ClusterStore;
 import com.example.inventory.store.DeviceStore;
 import com.example.inventory.DTO.auth.DeviceAuthRequestDTO;
 import com.example.inventory.models.Cluster;
 import com.example.inventory.models.Device;
 import com.example.inventory.repositories.redis.RedisRepository;
 import com.example.inventory.security.EncryptionUtil;
+import com.example.inventory.util.Convertor;
 import com.example.inventory.util.enums.DeviceStatus;
 import com.example.inventory.util.redis.RedisKeyCreator;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +44,8 @@ public class DeviceService {
     private final RedisKeyCreator redisKeyCreator;
     private final EncryptionUtil encryptionUtil;
     private final DeviceTokenProvider deviceTokenProvider;
+    private final ClusterStore clusterStore;
+    private final Convertor convertor;
 
     public String generateChallenge(String deviceId) {
         log.info("Request to generate challenge for device id={}", deviceId);
@@ -170,5 +175,21 @@ public class DeviceService {
 
         log.info("All devices for cluster id={} successfully activated", wrapper.clusterId());
         return wrapper.secrets();
+    }
+
+    public List<DeviceInfoDTO> findByClusterAndCheckOwner(UUID clusterId, long userId) {
+        Cluster cluster = clusterStore.findById(clusterId);
+
+        isOwner(cluster, userId);
+
+        List<Device> devices = cluster.getDevices();
+
+        return convertor.convertToDeviceInfoDTO(devices);
+    }
+
+    private void isOwner(Cluster cluster, long userId) {
+        if (cluster.getOwnerId() != userId){
+            throw new AccessDeniedException("You aren't owner this cluster!");
+        }
     }
 }

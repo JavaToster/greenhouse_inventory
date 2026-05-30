@@ -1,4 +1,4 @@
-package com.example.inventory.security.jwt;
+package com.example.inventory.util.enums;
 
 public enum TokenType {
     USER,

@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -80,7 +81,7 @@ public class ClusterService {
         return convertor.convertToClusterInfoDTO(clusterStore.findByOwner(ownerId));
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void addWorkerToCluster(long ownerId, UUID clusterId, long workerId) throws BadRequestException, AccessDeniedException {
         log.info("Attempt to add worker id={} to cluster id={} by owner id={}", workerId, clusterId, ownerId);
         Cluster cluster = clusterStore.findById(clusterId);
@@ -99,7 +100,7 @@ public class ClusterService {
         log.info("Worker id={} successfully added to cluster id={}", workerId, clusterId);
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void removeWorkerFromCluster(long ownerId, UUID clusterId, long workerId) throws AccessDeniedException, BadRequestException {
         log.info("Attempt to remove worker id={} from cluster id={} by owner id={}", workerId, clusterId, ownerId);
         Cluster cluster = clusterStore.findById(clusterId);

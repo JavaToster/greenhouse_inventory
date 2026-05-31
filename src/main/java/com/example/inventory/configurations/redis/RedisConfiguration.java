@@ -46,12 +46,9 @@ public class RedisConfiguration {
                 .disableCachingNullValues()
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(serializer));
 
-        Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
-        cacheConfigurations.put("systemStats", defaultCacheConfig.entryTtl(Duration.ofMinutes(3)));
 
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(defaultCacheConfig)
-                .withInitialCacheConfigurations(cacheConfigurations)
                 .build();
     }
 }

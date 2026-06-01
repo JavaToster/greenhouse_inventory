@@ -41,9 +41,6 @@ public class Cluster {
     @Column(name = "worker_id")
     private Set<Long> workerIds = new HashSet<>();
 
-    @Transient
-    private List<UUID> taskIds;
-
     public void addWorker(Long workerId){
         this.workerIds.add(workerId);
     }

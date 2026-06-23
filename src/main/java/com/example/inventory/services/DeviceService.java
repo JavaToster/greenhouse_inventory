@@ -88,10 +88,8 @@ public class DeviceService {
     private void validateSignature(String clientSig, String data, String secret) {
         String expected = hmacSha256(data, secret);
 
-        // Безопасное сравнение строк во избежание атак по времени (Timing Attacks)
         if (!MessageDigest.isEqual(expected.getBytes(StandardCharsets.UTF_8),
                 clientSig.getBytes(StandardCharsets.UTF_8))) {
-            // Безопасный лог: не выводим ожидаемую сигнатуру, чтобы не помогать злоумышленнику
             log.warn("Signature validation failed for client signature format check.");
             throw new BadCredentialsException("Invalid signature");
         }

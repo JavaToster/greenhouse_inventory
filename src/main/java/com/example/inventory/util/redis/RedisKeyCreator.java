@@ -16,4 +16,12 @@ public class RedisKeyCreator {
     public String createClusterDevicesTempSecretsKey(UUID id) {
         return CLUSTER_DEVICES_TEMP_SECRETS_PREFIX+id;
     }
+
+    public String createDeviceAuthAttemptKey(UUID deviceId) {
+        return "device-auth-attempt:" + deviceId;
+    }
+
+    public String createDeviceBlockedKey(UUID deviceId) {
+        return "device-blocked:" + deviceId;
+    }
 }

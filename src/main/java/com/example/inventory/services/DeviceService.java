@@ -40,6 +40,8 @@ import java.util.stream.IntStream;
 public class DeviceService {
     private final DeviceStore deviceStore;
     private static final long CHALLENGE_TTL_IN_SECONDS = 30;
+    private static final long ATTEMPT_TTL_IN_MINUTES = 5;
+    private static final int MAX_AUTH_ATTEMPTS = 5;
     private final RedisRepository redisRepository;
     private final RedisKeyCreator redisKeyCreator;
     private final EncryptionUtil encryptionUtil;
@@ -58,12 +60,25 @@ public class DeviceService {
         return challenge;
     }
 
+    @Transactional
     public String verify(DeviceAuthRequestDTO deviceAuthRequestDTO) {
+
+        if (redisRepository.exists(redisKeyCreator.createDeviceBlockedKey(deviceAuthRequestDTO.deviceId()))) {
+            log.warn("Authentication attempt for device id={} blocked due to too many failed attempts", deviceAuthRequestDTO.deviceId());
+            throw new BadCredentialsException("Too many authentication attempts. Try again later.");
+        }
+
         log.info("Authentication attempt for device id={}", deviceAuthRequestDTO.deviceId());
         Device device = deviceStore.findById(deviceAuthRequestDTO.deviceId());
 
-        String redisKey = redisKeyCreator.createChallengeKey(deviceAuthRequestDTO.deviceId().toString());
-        String issuedChallenge = redisRepository.findByKey(redisKey, String.class);
+        if (device.getStatus() != DeviceStatus.ACTIVE) {
+            log.warn("Auth failed for device id={}: device is not active", device.getId());
+
+            throw new BadCredentialsException("Device is not active");
+        }
+
+        String deviceChallengeKey = redisKeyCreator.createChallengeKey(deviceAuthRequestDTO.deviceId().toString());
+        String issuedChallenge = redisRepository.findByKey(deviceChallengeKey, String.class);
 
         if (issuedChallenge == null) {
             log.warn("Auth failed for device id={}: challenge expired or never issued", deviceAuthRequestDTO.deviceId());
@@ -76,21 +91,24 @@ public class DeviceService {
         }
 
         log.debug("Decrypting secret for signature validation on device id={}", device.getId());
-        validateSignature(deviceAuthRequestDTO.signature(), issuedChallenge, encryptionUtil.decrypt(device.getSecret()));
+        validateSignature(deviceAuthRequestDTO.signature(), issuedChallenge, encryptionUtil.decrypt(device.getSecret()), device);
 
-        log.debug("Removing consumed challenge key='{}' from Redis", redisKey);
-        redisRepository.remove(redisKey);
+        clearAuthAttempts(device);
+
+        log.debug("Removing consumed challenge key='{}' from Redis", deviceChallengeKey);
+        redisRepository.remove(deviceChallengeKey);
 
         log.info("Device id={} successfully authenticated", device.getId());
         return deviceJwtTokenIssuer.generate(device.getId(), device.getCluster().getId());
     }
 
-    private void validateSignature(String clientSig, String data, String secret) {
+    private void validateSignature(String clientSig, String data, String secret, Device device) {
         String expected = hmacSha256(data, secret);
 
         if (!MessageDigest.isEqual(expected.getBytes(StandardCharsets.UTF_8),
                 clientSig.getBytes(StandardCharsets.UTF_8))) {
             log.warn("Signature validation failed for client signature format check.");
+            handleFailedAttempt(device);
             throw new BadCredentialsException("Invalid signature");
         }
     }
@@ -193,5 +211,36 @@ public class DeviceService {
             throw new AccessDeniedException("You aren't owner this cluster!");
         }
         log.debug("Ownership verified for user telegramId={} on cluster id=[{}]", userId, cluster.getId());
+    }
+
+    private void handleFailedAttempt(Device device) {
+    String key = redisKeyCreator.createDeviceAuthAttemptKey(device.getId());
+
+    Integer attempts = redisRepository.findByKey(key, Integer.class);
+
+    if (attempts == null) {
+        attempts = 0;
+    }
+
+    attempts++;
+
+    redisRepository.saveWithTTLInMinutes(
+            key,
+            attempts,
+            ATTEMPT_TTL_IN_MINUTES
+    );
+
+    if (attempts >= MAX_AUTH_ATTEMPTS) {
+        redisRepository.saveWithTTLInMinutes(
+                redisKeyCreator.createDeviceBlockedKey(device.getId()),
+                true,
+                5
+        );
+        clearAuthAttempts(device);
+    }
+}
+
+    private void clearAuthAttempts(Device device) {
+        redisRepository.remove(redisKeyCreator.createDeviceAuthAttemptKey(device.getId()));
     }
 }

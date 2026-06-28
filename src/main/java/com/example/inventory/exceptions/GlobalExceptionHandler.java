@@ -50,7 +50,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseDTO> exceptionHandle(BadCredentialsException exc){
         log.warn("Authentication failed: {}", exc.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorResponseDTO(HttpStatus.UNAUTHORIZED.value(), "Authentication failed"));      
+                .body(new ErrorResponseDTO(HttpStatus.UNAUTHORIZED.value(), exc.getMessage()));      
     }
 
     @ExceptionHandler(Exception.class)

@@ -27,4 +27,8 @@ public class RedisRepository {
     public void saveWithTTLInMinutes(String key, Object value, long TTLMinutes){
         redisTemplate.opsForValue().set(key, value, Duration.ofMinutes(TTLMinutes));
     }
+
+    public boolean exists(String key) {
+        return redisTemplate.hasKey(key);
+    }
 }

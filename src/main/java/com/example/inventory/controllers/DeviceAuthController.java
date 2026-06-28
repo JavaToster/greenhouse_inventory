@@ -5,8 +5,11 @@ import com.example.inventory.DTO.auth.DeviceAuthRequestDTO;
 import com.example.inventory.DTO.auth.SuccessfullyAuthenticatedDTO;
 import com.example.inventory.services.DeviceService;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -16,7 +19,7 @@ public class DeviceAuthController {
     private final DeviceService deviceService;
 
     @PostMapping("/challenge/{deviceId}")
-    public ResponseEntity<ChallengeDTO> getChallenge(@PathVariable String deviceId){
+    public ResponseEntity<ChallengeDTO> getChallenge(@PathVariable UUID deviceId) throws BadRequestException {
         String challenge = deviceService.generateChallenge(deviceId);
         return ResponseEntity.ok(new ChallengeDTO(challenge));
     }

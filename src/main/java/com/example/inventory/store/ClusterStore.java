@@ -24,11 +24,12 @@ public class ClusterStore implements GenericStore<Cluster, UUID> {
     }
 
     public List<Cluster> findAll(){
-        return clusterRepository.findAll();
+        return clusterRepository.findAllWithDetails();
     }
 
+
     public List<Cluster> findByOwner(long ownerId){
-        return clusterRepository.findByOwnerId(ownerId);
+        return clusterRepository.findByOwnerIdWithDetails(ownerId);
     }
 
     @Override
@@ -38,6 +39,6 @@ public class ClusterStore implements GenericStore<Cluster, UUID> {
     }
 
     public List<Cluster> findByWorker(long workerId){
-        return clusterRepository.findByWorkerIdsContaining(workerId);
+        return clusterRepository.findByWorkerIdsContainingWithDetails(workerId);
     }
 }

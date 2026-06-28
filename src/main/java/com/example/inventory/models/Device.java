@@ -4,6 +4,8 @@ import com.example.inventory.util.enums.DeviceStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
 import org.springframework.data.domain.Persistable;
 
 import java.util.UUID;
@@ -30,6 +32,7 @@ public class Device implements Persistable<UUID> {
     private Cluster cluster;
 
     @Transient
+    @ToString.Exclude
     private String rawSecret;
 
     @Transient

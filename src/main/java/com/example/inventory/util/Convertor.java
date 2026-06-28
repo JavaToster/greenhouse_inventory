@@ -7,6 +7,7 @@ import com.example.inventory.models.Device;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class Convertor {
@@ -20,7 +21,7 @@ public class Convertor {
         return new DeviceInfoDTO(device.getId(), device.getStatus());
     }
 
-    public List<DeviceInfoDTO> convertToDeviceInfoDTO(List<Device> devices){
+    public List<DeviceInfoDTO> convertToDeviceInfoDTO(Set<Device> devices){
         return devices.stream()
                 .map(this::convertToDeviceInfoDTO)
                 .toList();
@@ -36,14 +37,4 @@ public class Convertor {
                 cluster.getWorkerIds()
         );
     }
-
-    // public List<TaskInfoDTO> convertToTaskInfoDTO(List<Task> tasks){
-    //     return tasks.stream()
-    //             .map(this::convertToTaskInfoDTO)
-    //             .toList();
-    // }
-
-    // public TaskInfoDTO convertToTaskInfoDTO(Task task) {
-    //     return modelMapper.map(task, TaskInfoDTO.class);
-    // }
 }

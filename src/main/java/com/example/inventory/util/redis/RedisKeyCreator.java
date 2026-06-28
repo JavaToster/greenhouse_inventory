@@ -9,7 +9,7 @@ public class RedisKeyCreator {
     private static final String CHALLENGE_PREFIX = "challenge:";
     private static final String CLUSTER_DEVICES_TEMP_SECRETS_PREFIX = "cluster-devices-temp-secrets-prefix:";
 
-    public String createChallengeKey(String challengeId){
+    public String createChallengeKey(UUID challengeId){
         return CHALLENGE_PREFIX+challengeId;
     }
 

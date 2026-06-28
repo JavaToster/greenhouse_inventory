@@ -59,7 +59,7 @@ public class ClusterController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('INSTALLER', 'ADMIN')")
-    public ResponseEntity<DevicesTempSecretDTO> registerNewCluster(@Valid @RequestBody RegisterNewClusterDTO registerNewClusterDTO){
+    public ResponseEntity<DevicesTempSecretDTO> registerNewCluster(@Valid @RequestBody RegisterNewClusterDTO registerNewClusterDTO) throws BadRequestException{
         DevicesTempSecretDTO devicesTempSecretDTO = clusterService.registerNewCluster(registerNewClusterDTO);
         return ResponseEntity.ok(devicesTempSecretDTO);
     }

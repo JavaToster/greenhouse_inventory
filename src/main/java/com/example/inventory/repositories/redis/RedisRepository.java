@@ -31,4 +31,40 @@ public class RedisRepository {
     public boolean exists(String key) {
         return redisTemplate.hasKey(key);
     }
+
+    public long increment(String key) {
+        byte[] rawKey = redisTemplate.getStringSerializer().serialize(key);
+        
+        Long result = redisTemplate.execute(connection -> 
+            connection.stringCommands().incr(rawKey), 
+            true
+        );
+        
+        return result != null ? result : 0L;
+    }
+
+    public void setExpireInMinutes(String key, long timeoutMinutes) {
+        redisTemplate.expire(key, Duration.ofMinutes(timeoutMinutes));
+    }
+
+    public <T> T getAndDelete(String key, Class<T> type) {
+        if (key == null) {
+            return null;
+        }
+
+        byte[] rawKey = redisTemplate.getStringSerializer().serialize(key);
+
+        byte[] rawValue = redisTemplate.execute(connection ->
+                        connection.stringCommands().getDel(rawKey),
+                true
+        );
+
+        if (rawValue == null) {
+            return null;
+        }
+
+        Object value = redisTemplate.getValueSerializer().deserialize(rawValue);
+
+        return type.isInstance(value) ? type.cast(value) : null;
+    }
 }

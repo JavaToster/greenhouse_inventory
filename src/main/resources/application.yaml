@@ -64,7 +64,7 @@ spring:
     openfeign:
       client:
         config:
-          auth-service:
+          auth-user-service:
             connectTimeout: 2000
             readTimeout: 3000
           default:

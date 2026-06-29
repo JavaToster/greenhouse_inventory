@@ -3,6 +3,7 @@ package com.example.inventory.exceptions;
 import com.example.inventory.DTO.error.ErrorResponseDTO;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -34,7 +35,6 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponseDTO(HttpStatus.BAD_REQUEST.value(), "Validation failed: " + detailedMessage));
     }
 
-    // 2. Обработка сломанного JSON (HttpMessageNotReadableException)
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponseDTO> handleMalformedJson(HttpMessageNotReadableException exc) {
         log.warn("Malformed JSON or invalid body structure received: {}", exc.getMessage());
@@ -43,7 +43,6 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponseDTO(HttpStatus.BAD_REQUEST.value(), "Malformed JSON request body"));
     }
 
-    // 3. Обработка конфликтов уникальности данных на уровне БД (DataIntegrityViolationException)
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponseDTO> handleDataIntegrityViolation(DataIntegrityViolationException exc) {
         log.warn("Database integrity violation (possible duplicate or constraint issue): {}", exc.getMessage());

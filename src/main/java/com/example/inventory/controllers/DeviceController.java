@@ -33,7 +33,7 @@ public class DeviceController {
     }
 
     @GetMapping("/my-clusters/{clusterId}")
-    @PreAuthorize("hasRole('OWNER') and principal instanceof T(com.example.inventory.security.principals.UserPrincipal)")
+    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN') and principal instanceof T(com.example.inventory.security.principals.UserPrincipal)")
     public ResponseEntity<List<DeviceInfoDTO>> getDevicesByCluster(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable("clusterId") UUID clusterId) {

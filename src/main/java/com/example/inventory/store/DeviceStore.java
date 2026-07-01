@@ -48,4 +48,8 @@ public class DeviceStore implements GenericStore<Device, UUID> {
     public void remove(UUID id){
         deviceRepository.deleteById(id);
     }
+
+    public boolean isExist(UUID deviceId) {
+        return deviceRepository.existsById(deviceId);
+    }
 }

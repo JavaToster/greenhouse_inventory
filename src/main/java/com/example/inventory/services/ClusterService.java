@@ -43,18 +43,26 @@ public class ClusterService {
 
     private static final int CLUSTER_DEVICES_TEMP_SECRETS_TTL_IN_MINUTES = 5;
 
-    @Transactional
-    public DevicesTempSecretDTO registerNewCluster(RegisterNewClusterDTO registerNewClusterDTO) {
+    public DevicesTempSecretDTO registerNewCluster(RegisterNewClusterDTO registerNewClusterDTO) throws BadRequestException {
         log.info("Registering new cluster '{}' for owner id={}", registerNewClusterDTO.name(), registerNewClusterDTO.ownerId());
 
+        log.debug("Validating owner id={} via UserClient (Outside of DB Transaction)", registerNewClusterDTO.ownerId());
+        UserInfoDTO ownerInfo = userClient.getUser(registerNewClusterDTO.ownerId());
+        isOwner(ownerInfo);
+
+        return saveClusterAndGenerateSecrets(registerNewClusterDTO);
+    }
+
+    @Transactional
+    protected DevicesTempSecretDTO saveClusterAndGenerateSecrets(RegisterNewClusterDTO dto) {
         Cluster cluster = new Cluster();
-        cluster.setName(registerNewClusterDTO.name());
-        cluster.setOwnerId(registerNewClusterDTO.ownerId());
+        cluster.setName(dto.name());
+        cluster.setOwnerId(dto.ownerId());
         clusterStore.save(cluster);
 
-        log.debug("Creating {} initial devices for cluster id={}", registerNewClusterDTO.devicesCount(), cluster.getId());
-        List<Device> devicesOfCluster = deviceService.createNewDevices(cluster, registerNewClusterDTO.devicesCount());
-        cluster.setDevices(devicesOfCluster);
+        log.debug("Creating {} initial devices for cluster id={}", dto.devicesCount(), cluster.getId());
+        List<Device> devicesOfCluster = deviceService.createNewDevices(cluster, dto.devicesCount());
+        cluster.setDevices(new HashSet<>(devicesOfCluster));
         deviceStore.saveAll(devicesOfCluster);
 
         List<ClusterDevicesTempSecretsDTO> tempSecrets = devicesOfCluster.stream()
@@ -81,7 +89,7 @@ public class ClusterService {
         return convertor.convertToClusterInfoDTO(clusterStore.findByOwner(ownerId));
     }
 
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    @Transactional
     public void addWorkerToCluster(long ownerId, UUID clusterId, long workerId) throws BadRequestException, AccessDeniedException {
         log.info("Attempt to add worker id={} to cluster id={} by owner id={}", workerId, clusterId, ownerId);
         Cluster cluster = clusterStore.findById(clusterId);
@@ -129,11 +137,21 @@ public class ClusterService {
     }
 
     private void isWorker(UserInfoDTO worker) throws BadRequestException {
-        if (worker.role() != Role.ROLE_WORKER){
-            log.warn("Validation failed: user id={} has role={}, expected ROLE_WORKER", worker.telegramId(), worker.role());
+        if (worker == null || worker.role() != Role.ROLE_WORKER) {
+            log.warn("Validation failed: user is {}, expected ROLE_WORKER", 
+                worker == null ? "NULL" : "id=" + worker.telegramId() + " with role=" + worker.role());
             throw new BadRequestException("User is not a worker");
         }
     }
+
+    private void isOwner(UserInfoDTO owner) throws BadRequestException {
+        if (owner == null || owner.role() != Role.ROLE_OWNER) {
+            log.warn("Validation failed: user is {}, expected ROLE_OWNER", 
+                owner == null ? "NULL" : "id=" + owner.telegramId() + " with role=" + owner.role());
+            throw new BadRequestException("The specified user does not have the OWNER role");
+        }
+    }
+
 
     private List<ClusterInfoDTO> findClusters(UserPrincipal userPrincipal, Long ownerId, Long workerId) {
         log.debug("Filtering clusters by switch-hierarchy. Principal role={}, telegramId={}", userPrincipal.role(), userPrincipal.telegramId());

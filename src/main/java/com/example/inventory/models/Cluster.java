@@ -30,8 +30,7 @@ public class Cluster {
     private Long ownerId;
 
     @OneToMany(mappedBy = "cluster")
-    List<Device> devices;
-
+    private Set<Device> devices = new HashSet<>();
     @ElementCollection
     @CollectionTable(
             name = "clusters_workers",

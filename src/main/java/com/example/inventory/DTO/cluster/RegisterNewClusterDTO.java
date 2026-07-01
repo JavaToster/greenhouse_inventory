@@ -5,11 +5,11 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 public record RegisterNewClusterDTO(
-        @NotNull(message = "РћР±СЏР·Р°С‚РµР»СЊРЅРѕ РІРІРµРґРёС‚Рµ telegram id С…РѕР·СЏРёРЅР° РєР»Р°СЃС‚РµСЂР°")
+        @NotNull(message = "Cluster owner Telegram ID is required")
         Long ownerId,
-        @Min(value = 1, message = "РљРѕР»РёС‡РµСЃС‚РІРѕ РґРµРІР°Р№СЃРѕРІ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ РјРёРЅРёРјСѓРј 1 РјР°РєСЃРёРјСѓРј 100")
-        @Max(value = 100, message = "РљРѕР»РёС‡РµСЃС‚РІРѕ РґРµРІР°Р№СЃРѕРІ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ РјРёРЅРёРјСѓРј 1 РјР°РєСЃРёРјСѓРј 100")
+        @Min(value = 1, message = "Device count must be between 1 and 100")
+        @Max(value = 100, message = "Device count must be between 1 and 100")
         int devicesCount,
-        @NotNull(message = "РРјСЏ РЅРµ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј")
+        @NotNull(message = "Cluster name cannot be empty")
         String name
 ) {}

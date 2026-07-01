@@ -36,7 +36,7 @@ public class ClusterController {
     }
 
     @PostMapping("/{clusterId}/workers")
-    @PreAuthorize("hasRole('OWNER') and principal instanceof T(com.example.inventory.security.principals.UserPrincipal)")
+    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN') and principal instanceof T(com.example.inventory.security.principals.UserPrincipal)")
     public ResponseEntity<?> addWorkerToCluster(
             @AuthenticationPrincipal UserPrincipal authentication,
             @PathVariable("clusterId") UUID clusterId,
@@ -47,7 +47,7 @@ public class ClusterController {
     }
 
     @DeleteMapping("/{clusterId}/workers")
-    @PreAuthorize("hasRole('OWNER') and principal instanceof T(com.example.inventory.security.principals.UserPrincipal)")
+    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN') and principal instanceof T(com.example.inventory.security.principals.UserPrincipal)")
     public ResponseEntity<?> removeWorkerFromCluster(
             @AuthenticationPrincipal UserPrincipal authentication,
             @PathVariable("clusterId") UUID clusterId,
@@ -59,7 +59,7 @@ public class ClusterController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('INSTALLER', 'ADMIN')")
-    public ResponseEntity<DevicesTempSecretDTO> registerNewCluster(@Valid @RequestBody RegisterNewClusterDTO registerNewClusterDTO){
+    public ResponseEntity<DevicesTempSecretDTO> registerNewCluster(@Valid @RequestBody RegisterNewClusterDTO registerNewClusterDTO) throws BadRequestException{
         DevicesTempSecretDTO devicesTempSecretDTO = clusterService.registerNewCluster(registerNewClusterDTO);
         return ResponseEntity.ok(devicesTempSecretDTO);
     }

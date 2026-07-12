@@ -2,15 +2,14 @@ package com.example.inventory.models;
 
 import com.example.inventory.util.enums.DeviceStatus;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 
 import org.springframework.data.domain.Persistable;
 
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "devices")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -27,12 +26,11 @@ public class Device implements Persistable<UUID> {
     @Column(name = "status", nullable = false)
     private DeviceStatus status;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cluster_id", referencedColumnName = "id")
     private Cluster cluster;
 
     @Transient
-    @ToString.Exclude
     private String rawSecret;
 
     @Transient
@@ -48,4 +46,6 @@ public class Device implements Persistable<UUID> {
     void markNotNew(){
         this.isNew = false;
     }
+
+
 }

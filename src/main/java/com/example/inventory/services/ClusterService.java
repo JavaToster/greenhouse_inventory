@@ -76,7 +76,7 @@ public class ClusterService {
         redisRepository.saveWithTTLInMinutes(redisKey, new DevicesSecretWrapper(cluster.getId(), tempSecrets), CLUSTER_DEVICES_TEMP_SECRETS_TTL_IN_MINUTES);
 
         log.info("Cluster id={} registered successfully with {} devices", cluster.getId(), devicesOfCluster.size());
-        return new DevicesTempSecretDTO(cluster.getId().toString(), secretsToken.toString());
+        return new DevicesTempSecretDTO(cluster.getId(), secretsToken.toString());
     }
 
     private List<ClusterInfoDTO> findAllClusters() {

@@ -1,6 +1,9 @@
 server:
   port: ${INVENTORY_SERVER_PORT}
 
+springdoc:
+  default-produces-media-type: application/json
+
 spring:
   config:
     import: optional:file:../.env

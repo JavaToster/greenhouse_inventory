@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/devices")
@@ -33,6 +35,7 @@ public class DeviceController {
             @ApiResponse(responseCode = "200", description = "Device removed successfully")
     })
     public ResponseEntity<UUID> removeDevice(@PathVariable("id") UUID deviceId){
+        log.info("Received request to remove device id={}", deviceId);
         return ResponseEntity.ok(deviceService.remove(deviceId));
     }
 
@@ -43,6 +46,7 @@ public class DeviceController {
             @ApiResponse(responseCode = "200", description = "Device secrets returned successfully")
     })
     public ResponseEntity<List<ClusterDevicesTempSecretsDTO>> getSecrets(@PathVariable("token") UUID token){
+        log.info("Received request to fetch device secrets using activation token='{}'", token);
         List<ClusterDevicesTempSecretsDTO> secrets = deviceService.getRawKeysAndActivate(token);
         return ResponseEntity.ok(secrets);
     }
@@ -56,6 +60,8 @@ public class DeviceController {
     public ResponseEntity<List<DeviceInfoDTO>> getDevicesByCluster(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable("clusterId") UUID clusterId) {
+        log.debug("Received request from user telegramId={} to fetch devices for cluster id={}",
+                userPrincipal.telegramId(), clusterId);
         List<DeviceInfoDTO> devices = deviceService.findByClusterAndCheckOwner(clusterId, userPrincipal.telegramId());
         return ResponseEntity.ok(devices);
     }

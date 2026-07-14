@@ -10,12 +10,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/devices/auth")
@@ -31,6 +33,7 @@ public class DeviceAuthController {
     })
     @SecurityRequirements
     public ResponseEntity<ChallengeDTO> getChallenge(@PathVariable UUID deviceId) throws BadRequestException {
+        log.debug("Received request to generate authentication challenge for device id={}", deviceId);
         String challenge = deviceService.generateChallenge(deviceId);
         return ResponseEntity.ok(new ChallengeDTO(challenge));
     }
@@ -42,6 +45,7 @@ public class DeviceAuthController {
     })
     @SecurityRequirements
     public ResponseEntity<SuccessfullyAuthenticatedDTO> verify(@RequestBody DeviceAuthRequestDTO deviceAuthRequestDTO) {
+        log.debug("Received request to verify authentication challenge for device id={}", deviceAuthRequestDTO.deviceId());
         String token = deviceService.verify(deviceAuthRequestDTO);
         return ResponseEntity.ok(new SuccessfullyAuthenticatedDTO(token));
     }

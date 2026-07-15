@@ -39,9 +39,9 @@ public class DeviceController {
         return ResponseEntity.ok(deviceService.remove(deviceId));
     }
 
-    @GetMapping("/secrets/{token}")
+    @PostMapping("/secrets/{token}")
     @PreAuthorize("hasAnyRole('INSTALLER', 'ADMIN')")
-    @Operation(summary = "Get raw device secrets and activate devices")
+    @Operation(summary = "Activate cluster devices and return raw device secrets")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Device secrets returned successfully")
     })
@@ -62,7 +62,7 @@ public class DeviceController {
             @PathVariable("clusterId") UUID clusterId) {
         log.debug("Received request from user telegramId={} to fetch devices for cluster id={}",
                 userPrincipal.telegramId(), clusterId);
-        List<DeviceInfoDTO> devices = deviceService.findByClusterAndCheckOwner(clusterId, userPrincipal.telegramId());
+        List<DeviceInfoDTO> devices = deviceService.findByClusterAndCheckOwner(clusterId, userPrincipal.telegramId(), userPrincipal.role());
         return ResponseEntity.ok(devices);
     }
 }

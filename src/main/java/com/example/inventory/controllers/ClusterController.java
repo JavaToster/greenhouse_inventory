@@ -56,14 +56,14 @@ public class ClusterController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Worker added to cluster successfully")
     })
-    public ResponseEntity<?> addWorkerToCluster(
+    public ResponseEntity<Void> addWorkerToCluster(
             @AuthenticationPrincipal UserPrincipal authentication,
             @PathVariable("clusterId") UUID clusterId,
             @Valid @RequestBody WorkerAssignmentDTO dto
     ) throws BadRequestException {
         log.info("Received request from user id={} to add worker id={} to cluster id={}",
                 authentication.telegramId(), dto.workerId(), clusterId);
-        clusterService.addWorkerToCluster(authentication.telegramId(), clusterId, dto.workerId());
+        clusterService.addWorkerToCluster(authentication.telegramId(), authentication.role(), clusterId, dto.workerId());
         return ResponseEntity.ok().build();
     }
 
@@ -73,14 +73,14 @@ public class ClusterController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Worker removed from cluster successfully")
     })
-    public ResponseEntity<?> removeWorkerFromCluster(
+    public ResponseEntity<Void> removeWorkerFromCluster(
             @AuthenticationPrincipal UserPrincipal authentication,
             @PathVariable("clusterId") UUID clusterId,
             @Valid @RequestBody WorkerAssignmentDTO workerAssigmentDTO
     ) throws BadRequestException {
         log.info("Received request from user id={} to remove worker id={} from cluster id={}",
                 authentication.telegramId(), workerAssigmentDTO.workerId(), clusterId);
-        clusterService.removeWorkerFromCluster(authentication.telegramId(), clusterId, workerAssigmentDTO.workerId());
+        clusterService.removeWorkerFromCluster(authentication.telegramId(), authentication.role(), clusterId, workerAssigmentDTO.workerId());
         return ResponseEntity.ok().build();
     }
 

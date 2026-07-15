@@ -31,28 +31,4 @@ public class DeviceJwtTokenIssuer {
         log.debug("Device token successfully created with TTL={} min", DEVICE_TOKEN_TTL.toMinutes());
         return token;
     }
-
-//    public UUID validateAndGetDeviceId(String token) {
-//        log.debug("Validating device token");
-//        DecodedJWT jwt = jwtUtil.verify(token);
-//        TokenType tokenType = jwtUtil.getTokenType(jwt);
-//
-//        if (tokenType != TokenType.DEVICE) {
-//            log.warn("Token validation failed: expected token type {}, but received {}", TokenType.DEVICE, tokenType);
-//            throw new IllegalArgumentException("Token is not a device token");
-//        }
-//
-//        String deviceIdStr = jwt.getSubject();
-//        log.debug("Device token is valid. Found device id={}", deviceIdStr);
-//        return UUID.fromString(deviceIdStr);
-//    }
-//
-//    public UUID getClusterId(String token) {
-//        log.debug("Extracting cluster claim from device token");
-//        DecodedJWT jwt = jwtUtil.verify(token);
-//        String clusterIdStr = jwt.getClaim(CLUSTER_ID_CLAIM).asString();
-//
-//        log.debug("Extracted cluster id={} from token claim", clusterIdStr);
-//        return UUID.fromString(clusterIdStr);
-//    }
 }

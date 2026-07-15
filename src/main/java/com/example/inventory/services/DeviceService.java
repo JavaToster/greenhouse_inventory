@@ -13,6 +13,7 @@ import com.example.inventory.repositories.redis.RedisRepository;
 import com.example.inventory.security.EncryptionUtil;
 import com.example.inventory.util.Convertor;
 import com.example.inventory.util.enums.DeviceStatus;
+import com.example.inventory.util.enums.Role;
 import com.example.inventory.util.redis.RedisKeyCreator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -185,11 +186,11 @@ public class DeviceService {
         return wrapper.secrets();
     }
 
-    public List<DeviceInfoDTO> findByClusterAndCheckOwner(UUID clusterId, long userId) {
+    public List<DeviceInfoDTO> findByClusterAndCheckOwner(UUID clusterId, long userId, Role role) {
         log.info("Fetching devices for cluster id=[{}] requested by user telegramId={}", clusterId, userId);
         Cluster cluster = clusterStore.findById(clusterId);
 
-        isOwner(cluster, userId);
+        checkOwner(cluster, userId, role);
 
         Set<Device> devices = cluster.getDevices();
         log.debug("Found {} devices for cluster id=[{}]", devices.size(), clusterId);
@@ -197,7 +198,11 @@ public class DeviceService {
         return convertor.convertToDeviceInfoDTO(devices);
     }
 
-    private void isOwner(Cluster cluster, long userId) {
+    private void checkOwner(Cluster cluster, long userId, Role role) {
+        if (role == Role.ROLE_ADMIN){
+            return;
+        }
+
         if (cluster.getOwnerId() != userId){
             log.warn("Security Alert: User telegramId={} attempted to access cluster id=[{}] but is NOT the owner", userId, cluster.getId());
             throw new AccessDeniedException("You aren't owner this cluster!");

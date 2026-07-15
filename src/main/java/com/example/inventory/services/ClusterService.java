@@ -90,10 +90,10 @@ public class ClusterService {
     }
 
     @Transactional
-    public void addWorkerToCluster(long ownerId, UUID clusterId, long workerId) throws BadRequestException, AccessDeniedException {
+    public void addWorkerToCluster(long ownerId, Role role, UUID clusterId, long workerId) throws BadRequestException, AccessDeniedException {
         log.info("Attempt to add worker id={} to cluster id={} by owner id={}", workerId, clusterId, ownerId);
         Cluster cluster = clusterStore.findById(clusterId);
-        checkOwner(cluster, ownerId);
+        checkOwner(cluster, ownerId, role);
 
         if (cluster.getWorkerIds().contains(workerId)) {
             log.warn("Failed to add worker: user id={} is already a worker in cluster id={}", workerId, clusterId);
@@ -109,10 +109,10 @@ public class ClusterService {
     }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public void removeWorkerFromCluster(long ownerId, UUID clusterId, long workerId) throws AccessDeniedException, BadRequestException {
+    public void removeWorkerFromCluster(long ownerId, Role role, UUID clusterId, long workerId) throws AccessDeniedException, BadRequestException {
         log.info("Attempt to remove worker id={} from cluster id={} by owner id={}", workerId, clusterId, ownerId);
         Cluster cluster = clusterStore.findById(clusterId);
-        checkOwner(cluster, ownerId);
+        checkOwner(cluster, ownerId, role);
 
         if (!cluster.getWorkerIds().contains(workerId)) {
             log.warn("Failed to remove worker: user id={} is not a worker in cluster id={}", workerId, clusterId);
@@ -129,7 +129,11 @@ public class ClusterService {
         return convertor.convertToClusterInfoDTO(clusterStore.findByWorker(workerId));
     }
 
-    private void checkOwner(Cluster cluster, long ownerId){
+    private void checkOwner(Cluster cluster, long ownerId, Role role){
+        if(role == Role.ROLE_ADMIN){
+            return;
+        }
+
         if(cluster.getOwnerId() != ownerId){
             log.warn("Access denied: user id={} is not the owner of cluster id={} (actual owner id={})", ownerId, cluster.getId(), cluster.getOwnerId());
             throw new AccessDeniedException("User is not the owner of this cluster");

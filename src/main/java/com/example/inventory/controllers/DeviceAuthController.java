@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
@@ -44,7 +45,7 @@ public class DeviceAuthController {
             @ApiResponse(responseCode = "200", description = "Device authenticated successfully")
     })
     @SecurityRequirements
-    public ResponseEntity<SuccessfullyAuthenticatedDTO> verify(@RequestBody DeviceAuthRequestDTO deviceAuthRequestDTO) {
+    public ResponseEntity<SuccessfullyAuthenticatedDTO> verify(@RequestBody @Valid DeviceAuthRequestDTO deviceAuthRequestDTO) {
         log.debug("Received request to verify authentication challenge for device id={}", deviceAuthRequestDTO.deviceId());
         String token = deviceService.verify(deviceAuthRequestDTO);
         return ResponseEntity.ok(new SuccessfullyAuthenticatedDTO(token));

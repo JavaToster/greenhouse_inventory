@@ -3,6 +3,7 @@ package com.example.inventory.DTO.cluster;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 @Schema(description = "Request to register a new greenhouse cluster")
@@ -27,7 +28,7 @@ public record RegisterNewClusterDTO(
                 description = "Human-readable cluster name",
                 example = "Greenhouse Cluster A"
         )
-        @NotNull(message = "Cluster name cannot be empty")
+        @NotBlank(message = "Cluster name cannot be empty")
         String name
 
 ) {

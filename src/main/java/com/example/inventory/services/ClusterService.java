@@ -43,6 +43,7 @@ public class ClusterService {
 
     private static final int CLUSTER_DEVICES_TEMP_SECRETS_TTL_IN_MINUTES = 5;
 
+    @Transactional
     public DevicesTempSecretDTO registerNewCluster(RegisterNewClusterDTO registerNewClusterDTO) throws BadRequestException {
         log.info("Registering new cluster '{}' for owner id={}", registerNewClusterDTO.name(), registerNewClusterDTO.ownerId());
 
@@ -53,7 +54,6 @@ public class ClusterService {
         return saveClusterAndGenerateSecrets(registerNewClusterDTO);
     }
 
-    @Transactional
     protected DevicesTempSecretDTO saveClusterAndGenerateSecrets(RegisterNewClusterDTO dto) {
         Cluster cluster = new Cluster();
         cluster.setName(dto.name());

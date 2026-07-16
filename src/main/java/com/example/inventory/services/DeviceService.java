@@ -30,10 +30,7 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.Base64;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -203,7 +200,7 @@ public class DeviceService {
             return;
         }
 
-        if (cluster.getOwnerId() != userId){
+        if (Objects.equals(cluster.getOwnerId(), userId)){
             log.warn("Security Alert: User telegramId={} attempted to access cluster id=[{}] but is NOT the owner", userId, cluster.getId());
             throw new AccessDeniedException("You aren't owner this cluster!");
         }

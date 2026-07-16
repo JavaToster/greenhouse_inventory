@@ -134,7 +134,7 @@ public class ClusterService {
             return;
         }
 
-        if(cluster.getOwnerId() != ownerId){
+        if(Objects.equals(cluster.getOwnerId(), ownerId)){
             log.warn("Access denied: user id={} is not the owner of cluster id={} (actual owner id={})", ownerId, cluster.getId(), cluster.getOwnerId());
             throw new AccessDeniedException("User is not the owner of this cluster");
         }

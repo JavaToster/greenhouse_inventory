@@ -22,8 +22,11 @@ public class JwtUtil {
     private static final String TOKEN_TYPE_CLAIM = "token_type";
     private static final String ROLE_CLAIM = "role";
 
-    @Value("${spring.security.jwt.secret}")
-    private String secret;
+    private final String secret;
+
+    public JwtUtil(@Value("${spring.security.jwt.secret}") String secret){
+        this.secret = secret;
+    }
 
     public String generateToken(String subject, TokenType tokenType, Map<String, Object> claims, Duration ttl) {
         log.debug("Inventory: generating JWT token for subject={}, tokenType={}, ttl={}", subject, tokenType, ttl);

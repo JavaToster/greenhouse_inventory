@@ -15,18 +15,21 @@ import java.util.Base64;
 @Slf4j
 @Component
 public class EncryptionUtil {
-    @Value("${spring.security.devices.secret.encryption.key}")
-    private String key;
 
-    @Value("${spring.security.devices.secret.encryption.algorithm}")
-    private String algorithm;
+    private final String key;
+    private final String algorithm;
+    private final int ivLengthBytes;
+    private final int tagLengthBits;
 
-    @Value("${spring.security.devices.secret.encryption.iv-length-bytes}")
-    private int ivLengthBytes;
-
-    @Value("${spring.security.devices.secret.encryption.tag-length-bits}")
-    private int tagLengthBits;
-
+    public EncryptionUtil(@Value("${spring.security.devices.secret.encryption.key}")String key,
+                          @Value("${spring.security.devices.secret.encryption.algorithm}") String algorithm,
+                          @Value("${spring.security.devices.secret.encryption.iv-length-bytes}")int ivLengthBytes,
+                          @Value("${spring.security.devices.secret.encryption.tag-length-bits}") int tagLengthBits) {
+        this.key = key;
+        this.algorithm = algorithm;
+        this.ivLengthBytes = ivLengthBytes;
+        this.tagLengthBits = tagLengthBits;
+    }
     private final SecureRandom secureRandom = new SecureRandom();
 
     public String encrypt(String raw){
